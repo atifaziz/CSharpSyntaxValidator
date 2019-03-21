@@ -18,6 +18,7 @@ namespace CSharpSyntaxValidator
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -31,6 +32,9 @@ namespace CSharpSyntaxValidator
 
             var options = new OptionSet
             {
+                { "debug", "break into debugger on start",
+                   _ => Debugger.Launch() },
+
                 { "d=|define=",
                   "define {NAME} as a conditional compilation symbol; " +
                   "use semi-colon (;) to define multiple symbols",
