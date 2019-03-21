@@ -28,6 +28,8 @@ namespace CSharpSyntaxValidator
 
     static class Program
     {
+        static bool _verbose;
+
         static int Wain(string[] args)
         {
             var symbols = new List<string>();
@@ -37,6 +39,9 @@ namespace CSharpSyntaxValidator
             {
                 { "h|?|help", "display this help",
                    _ => help = true },
+
+                { "v|verbose", "enable verbose output",
+                   _ => _verbose = true },
 
                 { "debug", "break into debugger on start",
                    _ => Debugger.Launch() },
@@ -123,7 +128,8 @@ namespace CSharpSyntaxValidator
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e.GetBaseException().Message);
+                Console.Error.WriteLine(_verbose ? e.ToString()
+                                                 : e.GetBaseException().Message);
                 return 0xbad;
             }
         }
