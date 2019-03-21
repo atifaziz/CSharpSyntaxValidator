@@ -37,6 +37,7 @@ namespace CSharpSyntaxValidator
             var help = false;
             var quiet = false;
             var languageVersion = LanguageVersion.Default;
+            var listLanguageVersions = false;
             var kind = SourceCodeKind.Regular;
 
             var options = new OptionSet
@@ -61,6 +62,9 @@ namespace CSharpSyntaxValidator
                    v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
                                         : throw new Exception("Invalid C# language version specification: " + v) },
 
+                { "langversions", "list supported C# language versions",
+                  _ => listLanguageVersions = true },
+
                 { "script", "validate using scripting rules",
                    _ => kind = SourceCodeKind.Script },
 
@@ -75,6 +79,13 @@ namespace CSharpSyntaxValidator
             if (help)
             {
                 PrintHelp(options, Console.Out);
+                return 0;
+            }
+
+            if (listLanguageVersions)
+            {
+                foreach (LanguageVersion v in Enum.GetValues(typeof(LanguageVersion)))
+                    Console.WriteLine(v.ToDisplayString());
                 return 0;
             }
 
