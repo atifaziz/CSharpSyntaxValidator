@@ -24,6 +24,7 @@ namespace CSharpSyntaxValidator
     using System.Reflection;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.Text;
     using Mono.Options;
 
     static class Program
@@ -69,7 +70,7 @@ namespace CSharpSyntaxValidator
                   v => symbols.AddRange(v.Split(';', StringSplitOptions.RemoveEmptyEntries)) },
             };
 
-            options.Parse(args);
+            var tail = options.Parse(args);
 
             if (help)
             {
@@ -83,9 +84,26 @@ namespace CSharpSyntaxValidator
                     .WithLanguageVersion(languageVersion)
                     .WithKind(kind);
 
+            string path;
+            SourceText source;
+
+            switch (tail.Count)
+            {
+                case 0:
+                    path = "STDIN";
+                    source = SourceText.From(Console.In.ReadToEnd());
+                    break;
+                case 1:
+                    path = tail[0];
+                    source = SourceText.From(File.ReadAllText(path));
+                    break;
+                default:
+                    throw new Exception("Too many files specified as input when only one is allowed.");
+            }
+
             var diagnostics =
                 from d in CSharpSyntaxTree
-                    .ParseText(Console.In.ReadToEnd(), parseOptions, "STDIN")
+                    .ParseText(source, parseOptions, path)
                     .GetDiagnostics()
                 where d.Severity == DiagnosticSeverity.Error
                 select d;

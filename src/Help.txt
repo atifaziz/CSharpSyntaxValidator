@@ -3,7 +3,10 @@
 Validates C# syntax and returns a non-zero exit code if the supplied C#
 source contains syntax errors.
 
-Usage: csval [OPTIONS]
+Usage: csval [OPTIONS] [FILE]
+
+If FILE is not supplied then C# source is read from the standard input
+(STDIN) stream.
 
 where OPTIONS are one or more of the following:
 
