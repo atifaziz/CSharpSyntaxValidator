@@ -36,6 +36,7 @@ namespace CSharpSyntaxValidator
             var help = false;
             var quiet = false;
             var languageVersion = LanguageVersion.Default;
+            var kind = SourceCodeKind.Regular;
 
             var options = new OptionSet
             {
@@ -59,6 +60,9 @@ namespace CSharpSyntaxValidator
                    v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
                                         : throw new Exception("Invalid C# language version specification: " + v) },
 
+                { "script", "validate using scripting rules",
+                   _ => kind = SourceCodeKind.Script },
+
                 { "d=|define=",
                   "define {NAME} as a conditional compilation symbol; " +
                   "use semi-colon (;) to define multiple symbols",
@@ -76,7 +80,8 @@ namespace CSharpSyntaxValidator
             var parseOptions =
                 CSharpParseOptions.Default
                     .WithPreprocessorSymbols(symbols)
-                    .WithLanguageVersion(languageVersion);
+                    .WithLanguageVersion(languageVersion)
+                    .WithKind(kind);
 
             var diagnostics =
                 from d in CSharpSyntaxTree
