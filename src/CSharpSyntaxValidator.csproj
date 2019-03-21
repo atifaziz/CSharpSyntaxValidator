@@ -7,6 +7,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>csval</ToolCommandName>
     <LangVersion>7.2</LangVersion>
+    <Title>C# Syntax Validator</Title>
     <Copyright>Copyright © 2019 Atif Aziz. All rights reserved. Portions Copyright © 2008 Novell.</Copyright>
     <Description>Utility to validate syntax of C# source.</Description>
     <Authors>Atif Aziz</Authors>
@@ -24,6 +25,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Help.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Help.txt" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />

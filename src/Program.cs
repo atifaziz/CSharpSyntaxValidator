@@ -19,7 +19,9 @@ namespace CSharpSyntaxValidator
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
+    using System.Reflection;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Mono.Options;
@@ -29,9 +31,13 @@ namespace CSharpSyntaxValidator
         static int Wain(string[] args)
         {
             var symbols = new List<string>();
+            var help = false;
 
             var options = new OptionSet
             {
+                { "h|?|help", "display this help",
+                   _ => help = true },
+
                 { "debug", "break into debugger on start",
                    _ => Debugger.Launch() },
 
@@ -42,6 +48,12 @@ namespace CSharpSyntaxValidator
             };
 
             options.Parse(args);
+
+            if (help)
+            {
+                PrintHelp(options, Console.Out);
+                return 0;
+            }
 
             var parseOptions =
                 CSharpParseOptions.Default.WithPreprocessorSymbols(symbols);
@@ -61,6 +73,46 @@ namespace CSharpSyntaxValidator
             }
 
             return result;
+        }
+
+        static Assembly Assembly => typeof(Program).Assembly;
+
+        static void PrintHelp(OptionSet options, TextWriter output)
+        {
+            using (var stream = GetManifestResourceStream("Help.txt", typeof(Program)))
+            using (var reader = new StreamReader(stream))
+            using (var e = reader.ReadLines())
+            while (e.MoveNext())
+            {
+                var line = e.Current;
+                switch (line)
+                {
+                    case "<LOGO>":
+                        var version = Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                        var languageVersion = CSharpParseOptions.Default.LanguageVersion;
+                        output.WriteLine($"C# Syntax Validator, {version} (C# {languageVersion})");
+                        output.WriteLine(Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright);
+                        break;
+                    case "<OPTIONS>":
+                        options.WriteOptionDescriptions(output);
+                        break;
+                    default:
+                        output.WriteLine(line);
+                        break;
+                }
+            }
+        }
+
+        static Stream GetManifestResourceStream(string name, Type type = null) =>
+            type != null ? type.Assembly.GetManifestResourceStream(type, name)
+                         : Assembly.GetCallingAssembly().GetManifestResourceStream(name);
+
+        static IEnumerator<string> ReadLines(this TextReader reader)
+        {
+            if (reader == null) throw new ArgumentNullException(nameof(reader));
+
+            while (reader.ReadLine() is string line)
+                yield return line;
         }
 
         static int Main(string[] args)
