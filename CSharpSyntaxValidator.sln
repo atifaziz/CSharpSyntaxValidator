@@ -3,7 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpSyntaxValidator", "src\CSharpSyntaxValidator.csproj", "{1AC8C349-D34A-4F2D-9F42-086CDDEB52C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpSyntaxValidator", "src\CSharpSyntaxValidator.csproj", "{1AC8C349-D34A-4F2D-9F42-086CDDEB52C5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4FE9C2FD-2286-467B-BAF3-DC70A8BAAB3F}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		appveyor.yml = appveyor.yml
+		build.cmd = build.cmd
+		build.sh = build.sh
+		COPYING.txt = COPYING.txt
+		global.json = global.json
+		pack.cmd = pack.cmd
+		pack.sh = pack.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,9 +25,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1AC8C349-D34A-4F2D-9F42-086CDDEB52C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -30,5 +39,11 @@ Global
 		{1AC8C349-D34A-4F2D-9F42-086CDDEB52C5}.Release|x64.Build.0 = Release|Any CPU
 		{1AC8C349-D34A-4F2D-9F42-086CDDEB52C5}.Release|x86.ActiveCfg = Release|Any CPU
 		{1AC8C349-D34A-4F2D-9F42-086CDDEB52C5}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {21C7102F-5DB2-4BA4-A00C-719B2EF876F3}
 	EndGlobalSection
 EndGlobal
