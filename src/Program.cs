@@ -34,6 +34,7 @@ namespace CSharpSyntaxValidator
         {
             var symbols = new List<string>();
             var help = false;
+            var quiet = false;
 
             var options = new OptionSet
             {
@@ -45,6 +46,9 @@ namespace CSharpSyntaxValidator
 
                 { "debug", "break into debugger on start",
                    _ => Debugger.Launch() },
+
+                { "q|quiet", "suppress printing of syntax errors",
+                   _ => quiet = true },
 
                 { "d=|define=",
                   "define {NAME} as a conditional compilation symbol; " +
@@ -74,6 +78,8 @@ namespace CSharpSyntaxValidator
             foreach (var d in diagnostics)
             {
                 result = 1;
+                if (quiet)
+                    break;
                 Console.WriteLine(d);
             }
 
