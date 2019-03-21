@@ -35,6 +35,7 @@ namespace CSharpSyntaxValidator
             var symbols = new List<string>();
             var help = false;
             var quiet = false;
+            var languageVersion = LanguageVersion.Default;
 
             var options = new OptionSet
             {
@@ -49,6 +50,14 @@ namespace CSharpSyntaxValidator
 
                 { "q|quiet", "suppress printing of syntax errors",
                    _ => quiet = true },
+
+                { "langversion=",
+                  @"use C# language version syntax rules where {VERSION} " +
+                  @"is ""default"" to mean latest major version, " +
+                  @"or ""latest"" to mean latest version, including minor versions, " +
+                  @"or a specific version like ""6"" or ""7.1""",
+                   v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
+                                        : throw new Exception("Invalid C# language version specification: " + v) },
 
                 { "d=|define=",
                   "define {NAME} as a conditional compilation symbol; " +
@@ -65,7 +74,9 @@ namespace CSharpSyntaxValidator
             }
 
             var parseOptions =
-                CSharpParseOptions.Default.WithPreprocessorSymbols(symbols);
+                CSharpParseOptions.Default
+                    .WithPreprocessorSymbols(symbols)
+                    .WithLanguageVersion(languageVersion);
 
             var diagnostics =
                 from d in CSharpSyntaxTree
@@ -106,6 +117,22 @@ namespace CSharpSyntaxValidator
                         break;
                     case "<OPTIONS>":
                         options.WriteOptionDescriptions(output);
+                        break;
+                    case "<CSHARP-VERSION-LIST>":
+                        var defaultVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion();
+                        var latestVersion = LanguageVersion.Latest.MapSpecifiedToEffectiveVersion();
+                        foreach (var v in
+                            from LanguageVersion v in Enum.GetValues(typeof(LanguageVersion))
+                            select new
+                            {
+                                Display = v.ToDisplayString(),
+                                Floating = v == defaultVersion ? " (default)"
+                                         : v == latestVersion  ? " (latest)"
+                                         : null,
+                            })
+                        {
+                            output.WriteLine("- " + v.Display + v.Floating);
+                        }
                         break;
                     default:
                         output.WriteLine(line);
