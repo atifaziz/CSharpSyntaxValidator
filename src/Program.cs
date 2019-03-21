@@ -1,4 +1,4 @@
-﻿#region Copyright (c) 2019 Atif Aziz. All rights reserved.
+#region Copyright (c) 2019 Atif Aziz. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,31 +17,53 @@
 namespace CSharpSyntaxValidator
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
+    using Mono.Options;
 
     static class Program
     {
-        static int Main()
+        static int Wain(string[] args)
+        {
+            var symbols = new List<string>();
+
+            var options = new OptionSet
+            {
+                { "d=|define=",
+                  "define {NAME} as a conditional compilation symbol; " +
+                  "use semi-colon (;) to define multiple symbols",
+                  v => symbols.AddRange(v.Split(';', StringSplitOptions.RemoveEmptyEntries)) },
+            };
+
+            options.Parse(args);
+
+            var parseOptions =
+                CSharpParseOptions.Default.WithPreprocessorSymbols(symbols);
+
+            var diagnostics =
+                from d in CSharpSyntaxTree
+                    .ParseText(Console.In.ReadToEnd(), parseOptions, "STDIN")
+                    .GetDiagnostics()
+                where d.Severity == DiagnosticSeverity.Error
+                select d;
+
+            var result = 0;
+            foreach (var d in diagnostics)
+            {
+                result = 1;
+                Console.WriteLine(d);
+            }
+
+            return result;
+        }
+
+        static int Main(string[] args)
         {
             try
             {
-                var diagnostics =
-                    from d in CSharpSyntaxTree
-                        .ParseText(Console.In.ReadToEnd(), path: "STDIN")
-                        .GetDiagnostics()
-                    where d.Severity == DiagnosticSeverity.Error
-                    select d;
-
-                var result = 0;
-                foreach (var d in diagnostics)
-                {
-                    result = 1;
-                    Console.WriteLine(d);
-                }
-
-                return result;
+                return Wain(args);
             }
             catch (Exception e)
             {

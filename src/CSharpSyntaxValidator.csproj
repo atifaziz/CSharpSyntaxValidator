@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,7 +7,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>csval</ToolCommandName>
     <LangVersion>7.2</LangVersion>
-    <Copyright>Copyright © 2019 Atif Aziz. All rights reserved.</Copyright>
+    <Copyright>Copyright © 2019 Atif Aziz. All rights reserved. Portions Copyright © 2008 Novell.</Copyright>
     <Description>C# Syntax Validation Tool</Description>
     <Authors>Atif Aziz</Authors>
     <Owners>Atif Aziz</Owners>
