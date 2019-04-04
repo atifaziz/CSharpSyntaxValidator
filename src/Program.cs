@@ -146,7 +146,7 @@ namespace CSharpSyntaxValidator
                     case "<LOGO>":
                         var version = Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
                         var languageVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion().ToDisplayString();
-                        if (LanguageVersion.Latest != LanguageVersion.Default)
+                        if (LanguageVersion.Latest.MapSpecifiedToEffectiveVersion() != LanguageVersion.Default.MapSpecifiedToEffectiveVersion())
                             languageVersion += "; latest = " + LanguageVersion.Latest.MapSpecifiedToEffectiveVersion().ToDisplayString();
                         output.WriteLine($"C# Syntax Validator, v{version} (C# {languageVersion})");
                         output.WriteLine(Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright);
