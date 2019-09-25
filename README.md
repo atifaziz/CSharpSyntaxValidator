@@ -9,7 +9,7 @@ It is not a [linter] for C#.
 
 ## Installation
 
-You will need .NET Core SDK 2.1 or later installed.
+You will need .NET Core SDK 2.2 or later installed.
 
 Install [CSharpSyntaxValidator][csval] as follows:
 
