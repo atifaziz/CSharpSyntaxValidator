@@ -1,1 +1,1 @@
-@dotnet run --no-launch-profile -f netcoreapp2.2 -p "%~dp0src" -- %*
+@dotnet run --no-launch-profile -f netcoreapp3.0 -p "%~dp0src" -- %*

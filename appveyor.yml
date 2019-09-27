@@ -16,14 +16,15 @@ branches:
     - /.+[\-.]wip$/
     - wip
 skip_tags: true
+environment:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 install:
-- cmd: curl -O https://dot.net/v1/dotnet-install.ps1
-- sh: curl -O https://dot.net/v1/dotnet-install.sh
+- cmd: curl -sSLO https://dot.net/v1/dotnet-install.ps1
+- ps: ./dotnet-install.ps1 --version 3.0.100
+- sh: curl -sSLO https://dot.net/v1/dotnet-install.sh
 - sh: chmod +x dotnet-install.sh
-- ps: |
-    $sdkVersion = (type .\global.json | ConvertFrom-Json).sdk.version
-    if ($isWindows) { ./dotnet-install.ps1 -Version $sdkVersion }
-    if ($isLinux)   { ./dotnet-install.sh --version $sdkVersion }
+- sh: . dotnet-install.sh --version 3.0.100
 before_build:
 - dotnet --info
 build_script:
