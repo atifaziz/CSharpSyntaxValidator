@@ -12,6 +12,9 @@ pull_requests:
 branches:
   only:
     - master
+  except:
+    - /.+[\-.]wip$/
+    - wip
 skip_tags: true
 install:
 - cmd: curl -O https://dot.net/v1/dotnet-install.ps1
