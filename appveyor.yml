@@ -6,6 +6,7 @@ skip_commits:
   files:
     - '*.md'
     - '*.txt'
+    - 'run.*'
 skip_tags: true
 install:
 - cmd: curl -O https://dot.net/v1/dotnet-install.ps1
