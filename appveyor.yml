@@ -24,7 +24,8 @@ install:
 - ps: if ($isWindows) { ./dotnet-install.ps1 --version 3.0.100 }
 - sh: curl -sSLO https://dot.net/v1/dotnet-install.sh
 - sh: chmod +x dotnet-install.sh
-- sh: . dotnet-install.sh --version 3.0.100
+- sh: ./dotnet-install.sh --version 3.0.100
+- sh: set PATH="$HOME/.dotnet:$PATH"
 before_build:
 - dotnet --info
 build_script:
