@@ -84,7 +84,7 @@ namespace CSharpSyntaxValidator
 
             if (listLanguageVersions)
             {
-                foreach (LanguageVersion v in Enum.GetValues(typeof(LanguageVersion)))
+                foreach (var v in (LanguageVersion[])Enum.GetValues(typeof(LanguageVersion)))
                     Console.WriteLine(v.ToDisplayString());
                 return 0;
             }
@@ -125,7 +125,10 @@ namespace CSharpSyntaxValidator
 
         static void PrintHelp(OptionSet options, TextWriter output)
         {
-            using var stream = GetManifestResourceStream("Help.txt", typeof(Program));
+            const string resourceName = "Help.txt";
+            using var stream = GetManifestResourceStream(resourceName, typeof(Program));
+            if (stream is null)
+                throw new Exception("Missing help text.");
             using var reader = new StreamReader(stream);
             using var e = reader.ReadLines();
             while (e.MoveNext())
@@ -134,17 +137,27 @@ namespace CSharpSyntaxValidator
                 switch (line)
                 {
                     case "<LOGO>":
-                        var version = Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                    {
+                        var version = Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>() is {} va
+                                    ? va.InformationalVersion
+                                    : throw new Exception($"Missing {nameof(AssemblyInformationalVersionAttribute)}.");
                         var languageVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion().ToDisplayString();
                         if (LanguageVersion.Latest.MapSpecifiedToEffectiveVersion() != LanguageVersion.Default.MapSpecifiedToEffectiveVersion())
                             languageVersion += "; latest = " + LanguageVersion.Latest.MapSpecifiedToEffectiveVersion().ToDisplayString();
                         output.WriteLine($"C# Syntax Validator, v{version} (C# {languageVersion})");
-                        output.WriteLine(Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>().Copyright);
+                        var copyright = Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>() is {} ca
+                                      ? ca.Copyright
+                                      : throw new Exception($"Missing {nameof(AssemblyCopyrightAttribute)}.");
+                        output.WriteLine(copyright);
                         break;
+                    }
                     case "<OPTIONS>":
+                    {
                         options.WriteOptionDescriptions(output);
                         break;
+                    }
                     case "<CSHARP-VERSION-LIST>":
+                    {
                         var defaultVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion();
                         var latestVersion = LanguageVersion.Latest.MapSpecifiedToEffectiveVersion();
                         foreach (var v in
@@ -160,14 +173,17 @@ namespace CSharpSyntaxValidator
                             output.WriteLine("- " + v.Display + v.Floating);
                         }
                         break;
+                    }
                     default:
+                    {
                         output.WriteLine(line);
                         break;
+                    }
                 }
             }
         }
 
-        static Stream GetManifestResourceStream(string name, Type type = null) =>
+        static Stream? GetManifestResourceStream(string name, Type? type = null) =>
             type is not null ? type.Assembly.GetManifestResourceStream(type, name)
                              : Assembly.GetCallingAssembly().GetManifestResourceStream(name);
 

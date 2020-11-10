@@ -7,6 +7,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>csval</ToolCommandName>
     <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
     <Title>C# Syntax Validator</Title>
     <Copyright>Copyright © 2019 Atif Aziz. All rights reserved. Portions Copyright © 2008 Novell.</Copyright>
     <Description>Utility to validate syntax of C# source.</Description>
