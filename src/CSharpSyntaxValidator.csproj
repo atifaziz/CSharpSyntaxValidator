@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net5;netcoreapp3.1;netcoreapp2.1</TargetFrameworks>
     <VersionPrefix>1.4.0</VersionPrefix>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>csval</ToolCommandName>
