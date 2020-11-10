@@ -21,10 +21,10 @@ environment:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 install:
 - cmd: curl -sSLO https://dot.net/v1/dotnet-install.ps1
-- ps: if ($isWindows) { ./dotnet-install.ps1 --version 3.0.100 }
+- ps: if ($isWindows) { ./dotnet-install.ps1 -JsonFile global.json }
 - sh: curl -sSLO https://dot.net/v1/dotnet-install.sh
 - sh: chmod +x dotnet-install.sh
-- sh: ./dotnet-install.sh --version 3.0.100
+- sh: ./dotnet-install.sh --jsonfile global.json
 - sh: export PATH="$HOME/.dotnet:$PATH"
 before_build:
 - dotnet --info
