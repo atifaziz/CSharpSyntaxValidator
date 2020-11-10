@@ -95,22 +95,12 @@ namespace CSharpSyntaxValidator
                     .WithLanguageVersion(languageVersion)
                     .WithKind(kind);
 
-            string path;
-            SourceText source;
-
-            switch (tail.Count)
+            var (path, source) = tail.Count switch
             {
-                case 0:
-                    path = "STDIN";
-                    source = SourceText.From(Console.In.ReadToEnd());
-                    break;
-                case 1:
-                    path = tail[0];
-                    source = SourceText.From(File.ReadAllText(path));
-                    break;
-                default:
-                    throw new Exception("Too many files specified as input when only one is allowed.");
-            }
+                0 => ("STDIN", SourceText.From(Console.In.ReadToEnd())),
+                1 when tail[0] is {} p => (p, SourceText.From(File.ReadAllText(p))),
+                _ => throw new Exception("Too many files specified as input when only one is allowed.")
+            };
 
             var diagnostics =
                 from d in CSharpSyntaxTree
@@ -135,9 +125,9 @@ namespace CSharpSyntaxValidator
 
         static void PrintHelp(OptionSet options, TextWriter output)
         {
-            using (var stream = GetManifestResourceStream("Help.txt", typeof(Program)))
-            using (var reader = new StreamReader(stream))
-            using (var e = reader.ReadLines())
+            using var stream = GetManifestResourceStream("Help.txt", typeof(Program));
+            using var reader = new StreamReader(stream);
+            using var e = reader.ReadLines();
             while (e.MoveNext())
             {
                 var line = e.Current;
@@ -178,14 +168,14 @@ namespace CSharpSyntaxValidator
         }
 
         static Stream GetManifestResourceStream(string name, Type type = null) =>
-            type != null ? type.Assembly.GetManifestResourceStream(type, name)
-                         : Assembly.GetCallingAssembly().GetManifestResourceStream(name);
+            type is not null ? type.Assembly.GetManifestResourceStream(type, name)
+                             : Assembly.GetCallingAssembly().GetManifestResourceStream(name);
 
         static IEnumerator<string> ReadLines(this TextReader reader)
         {
-            if (reader == null) throw new ArgumentNullException(nameof(reader));
+            if (reader is null) throw new ArgumentNullException(nameof(reader));
 
-            while (reader.ReadLine() is string line)
+            while (reader.ReadLine() is {} line)
                 yield return line;
         }
 
