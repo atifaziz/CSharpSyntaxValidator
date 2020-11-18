@@ -14,199 +14,187 @@
 //
 #endregion
 
-namespace CSharpSyntaxValidator
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
+using Mono.Options;
+
+var verbose = false;
+
+try
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using Microsoft.CodeAnalysis.Text;
-    using Mono.Options;
+    return Wain(args);
+}
+catch (Exception e)
+{
+    Console.Error.WriteLine(verbose ? e.ToString()
+                                    : e.GetBaseException().Message);
+    return 0xbad;
+}
 
-    static class Program
+int Wain(string[] args)
+{
+    var symbols = new List<string>();
+    var help = false;
+    var quiet = false;
+    var languageVersion = LanguageVersion.Default;
+    var listLanguageVersions = false;
+    var kind = SourceCodeKind.Regular;
+
+    var options = new OptionSet
     {
-        static bool _verbose;
+        { "h|?|help", "display this help",
+            _ => help = true },
 
-        static int Wain(string[] args)
+        { "v|verbose", "enable verbose output",
+            _ => verbose = true },
+
+        { "debug", "break into debugger on start",
+            _ => Debugger.Launch() },
+
+        { "q|quiet", "suppress printing of syntax errors",
+            _ => quiet = true },
+
+        { "langversion=",
+            @"use C# language version syntax rules where {VERSION} " +
+            @"is ""default"" to mean latest major version, " +
+            @"or ""latest"" to mean latest version, including minor versions, " +
+            @"or a specific version like ""6"" or ""7.1""",
+            v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
+                                : throw new Exception("Invalid C# language version specification: " + v) },
+
+        { "langversions", "list supported C# language versions",
+            _ => listLanguageVersions = true },
+
+        { "script", "validate using scripting rules",
+            _ => kind = SourceCodeKind.Script },
+
+        { "d=|define=",
+            "define {NAME} as a conditional compilation symbol; " +
+            "use semi-colon (;) to define multiple symbols",
+            v => symbols.AddRange(v.Split(';', StringSplitOptions.RemoveEmptyEntries)) },
+    };
+
+    var tail = options.Parse(args);
+
+    if (help)
+    {
+        PrintHelp(options, Console.Out);
+        return 0;
+    }
+
+    if (listLanguageVersions)
+    {
+        foreach (var v in (LanguageVersion[])Enum.GetValues(typeof(LanguageVersion)))
+            Console.WriteLine(v.ToDisplayString());
+        return 0;
+    }
+
+    var parseOptions =
+        CSharpParseOptions.Default
+            .WithPreprocessorSymbols(symbols)
+            .WithLanguageVersion(languageVersion)
+            .WithKind(kind);
+
+    var (path, source) = tail.Count switch
+    {
+        0 => ("STDIN", SourceText.From(Console.In.ReadToEnd())),
+        1 when tail[0] is {} p => (p, SourceText.From(File.ReadAllText(p))),
+        _ => throw new Exception("Too many files specified as input when only one is allowed.")
+    };
+
+    var diagnostics =
+        from d in CSharpSyntaxTree.ParseText(source, parseOptions, path)
+                                  .GetDiagnostics()
+        where d.Severity == DiagnosticSeverity.Error
+        select d;
+
+    var result = 0;
+    foreach (var d in diagnostics)
+    {
+        result = 1;
+        if (quiet)
+            break;
+        Console.WriteLine(d);
+    }
+
+    return result;
+}
+
+static void PrintHelp(OptionSet options, TextWriter output)
+{
+    const string resourceName = "Help.txt";
+    var assembly = Assembly.GetExecutingAssembly();
+    using var stream = assembly.GetManifestResourceStream(resourceName);
+    if (stream is null)
+        throw new Exception("Missing help text.");
+    using var reader = new StreamReader(stream);
+    using var e = reader.ReadLines();
+    while (e.MoveNext())
+    {
+        var line = e.Current;
+        switch (line)
         {
-            var symbols = new List<string>();
-            var help = false;
-            var quiet = false;
-            var languageVersion = LanguageVersion.Default;
-            var listLanguageVersions = false;
-            var kind = SourceCodeKind.Regular;
-
-            var options = new OptionSet
+            case "<LOGO>":
             {
-                { "h|?|help", "display this help",
-                   _ => help = true },
-
-                { "v|verbose", "enable verbose output",
-                   _ => _verbose = true },
-
-                { "debug", "break into debugger on start",
-                   _ => Debugger.Launch() },
-
-                { "q|quiet", "suppress printing of syntax errors",
-                   _ => quiet = true },
-
-                { "langversion=",
-                  @"use C# language version syntax rules where {VERSION} " +
-                  @"is ""default"" to mean latest major version, " +
-                  @"or ""latest"" to mean latest version, including minor versions, " +
-                  @"or a specific version like ""6"" or ""7.1""",
-                   v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
-                                        : throw new Exception("Invalid C# language version specification: " + v) },
-
-                { "langversions", "list supported C# language versions",
-                  _ => listLanguageVersions = true },
-
-                { "script", "validate using scripting rules",
-                   _ => kind = SourceCodeKind.Script },
-
-                { "d=|define=",
-                  "define {NAME} as a conditional compilation symbol; " +
-                  "use semi-colon (;) to define multiple symbols",
-                  v => symbols.AddRange(v.Split(';', StringSplitOptions.RemoveEmptyEntries)) },
-            };
-
-            var tail = options.Parse(args);
-
-            if (help)
-            {
-                PrintHelp(options, Console.Out);
-                return 0;
+                var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>() is {} va
+                            ? va.InformationalVersion
+                            : throw new Exception($"Missing {nameof(AssemblyInformationalVersionAttribute)}.");
+                var languageVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion().ToDisplayString();
+                if (LanguageVersion.Latest.MapSpecifiedToEffectiveVersion() != LanguageVersion.Default.MapSpecifiedToEffectiveVersion())
+                    languageVersion += "; latest = " + LanguageVersion.Latest.MapSpecifiedToEffectiveVersion().ToDisplayString();
+                output.WriteLine($"C# Syntax Validator, v{version} (C# {languageVersion})");
+                var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>() is {} ca
+                                ? ca.Copyright
+                                : throw new Exception($"Missing {nameof(AssemblyCopyrightAttribute)}.");
+                output.WriteLine(copyright);
+                break;
             }
-
-            if (listLanguageVersions)
+            case "<OPTIONS>":
             {
-                foreach (var v in (LanguageVersion[])Enum.GetValues(typeof(LanguageVersion)))
-                    Console.WriteLine(v.ToDisplayString());
-                return 0;
+                options.WriteOptionDescriptions(output);
+                break;
             }
-
-            var parseOptions =
-                CSharpParseOptions.Default
-                    .WithPreprocessorSymbols(symbols)
-                    .WithLanguageVersion(languageVersion)
-                    .WithKind(kind);
-
-            var (path, source) = tail.Count switch
+            case "<CSHARP-VERSION-LIST>":
             {
-                0 => ("STDIN", SourceText.From(Console.In.ReadToEnd())),
-                1 when tail[0] is {} p => (p, SourceText.From(File.ReadAllText(p))),
-                _ => throw new Exception("Too many files specified as input when only one is allowed.")
-            };
-
-            var diagnostics =
-                from d in CSharpSyntaxTree
-                    .ParseText(source, parseOptions, path)
-                    .GetDiagnostics()
-                where d.Severity == DiagnosticSeverity.Error
-                select d;
-
-            var result = 0;
-            foreach (var d in diagnostics)
-            {
-                result = 1;
-                if (quiet)
-                    break;
-                Console.WriteLine(d);
-            }
-
-            return result;
-        }
-
-        static Assembly Assembly => typeof(Program).Assembly;
-
-        static void PrintHelp(OptionSet options, TextWriter output)
-        {
-            const string resourceName = "Help.txt";
-            using var stream = GetManifestResourceStream(resourceName, typeof(Program));
-            if (stream is null)
-                throw new Exception("Missing help text.");
-            using var reader = new StreamReader(stream);
-            using var e = reader.ReadLines();
-            while (e.MoveNext())
-            {
-                var line = e.Current;
-                switch (line)
+                var defaultVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion();
+                var latestVersion = LanguageVersion.Latest.MapSpecifiedToEffectiveVersion();
+                foreach (var v in
+                    from LanguageVersion v in Enum.GetValues(typeof(LanguageVersion))
+                    select new
+                    {
+                        Display  = v.ToDisplayString(),
+                        Floating = v == defaultVersion ? " (default)"
+                                 : v == latestVersion  ? " (latest)"
+                                 : null,
+                    })
                 {
-                    case "<LOGO>":
-                    {
-                        var version = Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>() is {} va
-                                    ? va.InformationalVersion
-                                    : throw new Exception($"Missing {nameof(AssemblyInformationalVersionAttribute)}.");
-                        var languageVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion().ToDisplayString();
-                        if (LanguageVersion.Latest.MapSpecifiedToEffectiveVersion() != LanguageVersion.Default.MapSpecifiedToEffectiveVersion())
-                            languageVersion += "; latest = " + LanguageVersion.Latest.MapSpecifiedToEffectiveVersion().ToDisplayString();
-                        output.WriteLine($"C# Syntax Validator, v{version} (C# {languageVersion})");
-                        var copyright = Assembly.GetCustomAttribute<AssemblyCopyrightAttribute>() is {} ca
-                                      ? ca.Copyright
-                                      : throw new Exception($"Missing {nameof(AssemblyCopyrightAttribute)}.");
-                        output.WriteLine(copyright);
-                        break;
-                    }
-                    case "<OPTIONS>":
-                    {
-                        options.WriteOptionDescriptions(output);
-                        break;
-                    }
-                    case "<CSHARP-VERSION-LIST>":
-                    {
-                        var defaultVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion();
-                        var latestVersion = LanguageVersion.Latest.MapSpecifiedToEffectiveVersion();
-                        foreach (var v in
-                            from LanguageVersion v in Enum.GetValues(typeof(LanguageVersion))
-                            select new
-                            {
-                                Display = v.ToDisplayString(),
-                                Floating = v == defaultVersion ? " (default)"
-                                         : v == latestVersion  ? " (latest)"
-                                         : null,
-                            })
-                        {
-                            output.WriteLine("- " + v.Display + v.Floating);
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        output.WriteLine(line);
-                        break;
-                    }
+                    output.WriteLine("- " + v.Display + v.Floating);
                 }
+                break;
             }
-        }
-
-        static Stream? GetManifestResourceStream(string name, Type? type = null) =>
-            type is not null ? type.Assembly.GetManifestResourceStream(type, name)
-                             : Assembly.GetCallingAssembly().GetManifestResourceStream(name);
-
-        static IEnumerator<string> ReadLines(this TextReader reader)
-        {
-            if (reader is null) throw new ArgumentNullException(nameof(reader));
-
-            while (reader.ReadLine() is {} line)
-                yield return line;
-        }
-
-        static int Main(string[] args)
-        {
-            try
+            default:
             {
-                return Wain(args);
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(_verbose ? e.ToString()
-                                                 : e.GetBaseException().Message);
-                return 0xbad;
+                output.WriteLine(line);
+                break;
             }
         }
+    }
+}
+
+static class Extensions
+{
+    public static IEnumerator<string> ReadLines(this TextReader reader)
+    {
+        if (reader is null) throw new ArgumentNullException(nameof(reader));
+
+        while (reader.ReadLine() is {} line)
+            yield return line;
     }
 }
