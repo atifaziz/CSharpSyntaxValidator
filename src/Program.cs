@@ -27,105 +27,101 @@ using Mono.Options;
 
 var verbose = false;
 
-try
+AppDomain.CurrentDomain.UnhandledException += (_, args) =>
 {
-    return Wain(args);
-}
-catch (Exception e)
+    switch (verbose, args.ExceptionObject)
+    {
+        case (false, Exception e): Console.Error.WriteLine(e.GetBaseException().Message); break;
+        case (_, {} e): Console.Error.WriteLine(e); break;
+    }
+    Environment.Exit(0xbad);
+};
+
+var symbols = new List<string>();
+var help = false;
+var quiet = false;
+var languageVersion = LanguageVersion.Default;
+var listLanguageVersions = false;
+var kind = SourceCodeKind.Regular;
+
+var options = new OptionSet
 {
-    Console.Error.WriteLine(verbose ? e.ToString()
-                                    : e.GetBaseException().Message);
-    return 0xbad;
-}
+    { "h|?|help", "display this help",
+        _ => help = true },
 
-int Wain(string[] args)
+    { "v|verbose", "enable verbose output",
+        _ => verbose = true },
+
+    { "debug", "break into debugger on start",
+        _ => Debugger.Launch() },
+
+    { "q|quiet", "suppress printing of syntax errors",
+        _ => quiet = true },
+
+    { "langversion=",
+        @"use C# language version syntax rules where {VERSION} " +
+        @"is ""default"" to mean latest major version, " +
+        @"or ""latest"" to mean latest version, including minor versions, " +
+        @"or a specific version like ""6"" or ""7.1""",
+        v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
+                            : throw new Exception("Invalid C# language version specification: " + v) },
+
+    { "langversions", "list supported C# language versions",
+        _ => listLanguageVersions = true },
+
+    { "script", "validate using scripting rules",
+        _ => kind = SourceCodeKind.Script },
+
+    { "d=|define=",
+        "define {NAME} as a conditional compilation symbol; " +
+        "use semi-colon (;) to define multiple symbols",
+        v => symbols.AddRange(v.Split(';', StringSplitOptions.RemoveEmptyEntries)) },
+};
+
+var tail = options.Parse(args);
+
+if (help)
 {
-    var symbols = new List<string>();
-    var help = false;
-    var quiet = false;
-    var languageVersion = LanguageVersion.Default;
-    var listLanguageVersions = false;
-    var kind = SourceCodeKind.Regular;
-
-    var options = new OptionSet
-    {
-        { "h|?|help", "display this help",
-            _ => help = true },
-
-        { "v|verbose", "enable verbose output",
-            _ => verbose = true },
-
-        { "debug", "break into debugger on start",
-            _ => Debugger.Launch() },
-
-        { "q|quiet", "suppress printing of syntax errors",
-            _ => quiet = true },
-
-        { "langversion=",
-            @"use C# language version syntax rules where {VERSION} " +
-            @"is ""default"" to mean latest major version, " +
-            @"or ""latest"" to mean latest version, including minor versions, " +
-            @"or a specific version like ""6"" or ""7.1""",
-            v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
-                                : throw new Exception("Invalid C# language version specification: " + v) },
-
-        { "langversions", "list supported C# language versions",
-            _ => listLanguageVersions = true },
-
-        { "script", "validate using scripting rules",
-            _ => kind = SourceCodeKind.Script },
-
-        { "d=|define=",
-            "define {NAME} as a conditional compilation symbol; " +
-            "use semi-colon (;) to define multiple symbols",
-            v => symbols.AddRange(v.Split(';', StringSplitOptions.RemoveEmptyEntries)) },
-    };
-
-    var tail = options.Parse(args);
-
-    if (help)
-    {
-        PrintHelp(options, Console.Out);
-        return 0;
-    }
-
-    if (listLanguageVersions)
-    {
-        foreach (var v in (LanguageVersion[])Enum.GetValues(typeof(LanguageVersion)))
-            Console.WriteLine(v.ToDisplayString());
-        return 0;
-    }
-
-    var parseOptions =
-        CSharpParseOptions.Default
-            .WithPreprocessorSymbols(symbols)
-            .WithLanguageVersion(languageVersion)
-            .WithKind(kind);
-
-    var (path, source) = tail.Count switch
-    {
-        0 => ("STDIN", SourceText.From(Console.In.ReadToEnd())),
-        1 when tail[0] is {} p => (p, SourceText.From(File.ReadAllText(p))),
-        _ => throw new Exception("Too many files specified as input when only one is allowed.")
-    };
-
-    var diagnostics =
-        from d in CSharpSyntaxTree.ParseText(source, parseOptions, path)
-                                  .GetDiagnostics()
-        where d.Severity == DiagnosticSeverity.Error
-        select d;
-
-    var result = 0;
-    foreach (var d in diagnostics)
-    {
-        result = 1;
-        if (quiet)
-            break;
-        Console.WriteLine(d);
-    }
-
-    return result;
+    PrintHelp(options, Console.Out);
+    return 0;
 }
+
+if (listLanguageVersions)
+{
+    foreach (var v in (LanguageVersion[])Enum.GetValues(typeof(LanguageVersion)))
+        Console.WriteLine(v.ToDisplayString());
+    return 0;
+}
+
+var parseOptions =
+    CSharpParseOptions.Default
+        .WithPreprocessorSymbols(symbols)
+        .WithLanguageVersion(languageVersion)
+        .WithKind(kind);
+
+var (path, source) = tail.Count switch
+{
+    0 => ("STDIN", SourceText.From(Console.In.ReadToEnd())),
+    1 when tail[0] is {} p => (p, SourceText.From(File.ReadAllText(p))),
+    _ => throw new Exception("Too many files specified as input when only one is allowed.")
+};
+
+var diagnostics =
+    from d in CSharpSyntaxTree.ParseText(source, parseOptions, path)
+                                .GetDiagnostics()
+    where d.Severity == DiagnosticSeverity.Error
+    select d;
+
+var result = 0;
+foreach (var d in diagnostics)
+{
+    result = 1;
+    if (quiet)
+        break;
+    Console.WriteLine(d);
+}
+
+return result;
 
 static void PrintHelp(OptionSet options, TextWriter output)
 {
