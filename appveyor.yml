@@ -34,6 +34,7 @@ build_script:
     if ($isWindows) { .\pack.cmd ci-$id } else { ./pack.sh ci-$id }
 artifacts:
 - path: dist\*.nupkg
+- path: dist\*.snupkg
 deploy:
 - provider: NuGet
   server: https://www.myget.org/F/raboof/api/v2/package
