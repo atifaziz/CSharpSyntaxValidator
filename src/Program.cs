@@ -143,17 +143,11 @@ static void PrintHelp(OptionSet options, TextWriter output)
         {
             case "<LOGO>":
             {
-                var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>() is {} va
-                            ? va.InformationalVersion
-                            : throw new Exception($"Missing {nameof(AssemblyInformationalVersionAttribute)}.");
                 var languageVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion().ToDisplayString();
                 if (LanguageVersion.Latest.MapSpecifiedToEffectiveVersion() != LanguageVersion.Default.MapSpecifiedToEffectiveVersion())
                     languageVersion += "; latest = " + LanguageVersion.Latest.MapSpecifiedToEffectiveVersion().ToDisplayString();
-                output.WriteLine($"C# Syntax Validator, v{version} (C# {languageVersion})");
-                var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>() is {} ca
-                                ? ca.Copyright
-                                : throw new Exception($"Missing {nameof(AssemblyCopyrightAttribute)}.");
-                output.WriteLine(copyright);
+                output.WriteLine($"C# Syntax Validator, v{ThisAssembly.Info.InformationalVersion} (C# {languageVersion})");
+                output.WriteLine(ThisAssembly.Info.Copyright);
                 break;
             }
             case "<OPTIONS>":
