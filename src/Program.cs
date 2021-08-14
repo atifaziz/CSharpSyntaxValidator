@@ -64,7 +64,7 @@ var options = new OptionSet
         @"or ""latest"" to mean latest version, including minor versions, " +
         @"or a specific version like ""6"" or ""7.1""",
         v => languageVersion = LanguageVersionFacts.TryParse(v, out var ver) ? ver
-                            : throw new Exception("Invalid C# language version specification: " + v) },
+                             : throw new Exception("Invalid C# language version specification: " + v) },
 
     { "langversions", "list supported C# language versions",
         _ => listLanguageVersions = true },
@@ -108,7 +108,7 @@ var (path, source) = tail.Count switch
 
 var diagnostics =
     from d in CSharpSyntaxTree.ParseText(source, parseOptions, path)
-                                .GetDiagnostics()
+                              .GetDiagnostics()
     where d.Severity == DiagnosticSeverity.Error
     select d;
 
