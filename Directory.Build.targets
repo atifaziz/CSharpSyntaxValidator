@@ -1,0 +1,6 @@
+<Project>
+
+  <Import Project="DotNet.ReproducibleBuilds.targets"
+          Condition="Exists('DotNet.ReproducibleBuilds.targets')" />
+
+</Project>

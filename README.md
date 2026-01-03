@@ -1,6 +1,6 @@
 # C# Syntax Validator
 
-CSharpSyntaxValidator is a [.NET Core CLI tool][dotnet-tool] that validates a
+CSharpSyntaxValidator is a [.NET CLI tool] that validates a
 C# source for syntax errors and sets its exit code to zero (0) if the C#
 source is valid and one (1) if invalid.
 
@@ -9,7 +9,7 @@ It is not a [linter] for C#.
 
 ## Installation
 
-You will need .NET Core SDK 2.2 or later installed.
+You will need .NET SDK 10 or later installed.
 
 Install [CSharpSyntaxValidator][csval] as follows:
 
@@ -32,28 +32,36 @@ For more help on usage, run with the `-h` option:
 
     csval -h
 
+### Development Usage
+
+CSharpSyntaxValidator is a [file-based application], so you can also run it
+using `dotnet` as follows:
+
+    dotnet CSharpSyntaxValidator.cs < Program.cs && echo OK
+
+On Unix-like systems, `./CSharpSyntaxValidator.cs` can also be invoked directly as an executable:
+
+    ./CSharpSyntaxValidator.cs < Program.cs && echo OK
+
+For help, run:
+
+    dotnet CSharpSyntaxValidator.cs -- -h
+
 
 ## Building
 
-The .NET Core SDK is the minimum requirement.
+Since CSharpSyntaxValidator is a [file-based application], an explicit build
+step is not necessary for usage, but the .NET SDK is the minimum requirement.
+However, you can package it as a [.NET CLI tool] using:
 
-To build just the binaries on Windows, run:
+    dotnet pack CSharpSyntaxValidator.cs
 
-    .\build.cmd
+Yu can also publish it as a self-contained application that does not require a .NET runtime installation using:
 
-On Linux or macOS, run instead:
-
-    ./build.sh
-
-To build the binaries and the NuGet package on Windows, run:
-
-    .\pack.cmd
-
-On Linux or macOS, run instead:
-
-    ./pack.sh
+    dotnet publish CSharpSyntaxValidator.cs
 
 
 [csval]: https://www.nuget.org/packages/CSharpSyntaxValidator/
-[dotnet-tool]: https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools
+[.NET CLI tool]: https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools
 [linter]: https://en.wikipedia.org/wiki/Lint_(software)
+[file-based application]: https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps
