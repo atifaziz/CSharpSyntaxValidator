@@ -1,8 +1,8 @@
 # C# Syntax Validator
 
-CSharpSyntaxValidator is a [.NET CLI tool] that validates a
-C# source for syntax errors and sets its exit code to zero (0) if the C#
-source is valid and one (1) if invalid.
+CSharpSyntaxValidator is a [.NET CLI tool] that validates a C# source for syntax
+errors and sets its exit code to zero (0) if the C# source is valid and one (1)
+if invalid.
 
 It is not a [linter] for C#.
 
@@ -39,7 +39,8 @@ using `dotnet` as follows:
 
     dotnet CSharpSyntaxValidator.cs < Program.cs && echo OK
 
-On Unix-like systems, `./CSharpSyntaxValidator.cs` can also be invoked directly as an executable:
+On Unix-like systems, `./CSharpSyntaxValidator.cs` can also be invoked directly
+as an executable:
 
     ./CSharpSyntaxValidator.cs < Program.cs && echo OK
 
@@ -56,7 +57,8 @@ However, you can package it as a [.NET CLI tool] using:
 
     dotnet pack CSharpSyntaxValidator.cs
 
-You can also publish it as a self-contained application that does not require a .NET runtime installation using:
+You can also publish it as a self-contained application that does not require a
+.NET runtime installation using:
 
     dotnet publish CSharpSyntaxValidator.cs
 
