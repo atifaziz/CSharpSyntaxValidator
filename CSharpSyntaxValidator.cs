@@ -1,7 +1,7 @@
 #!/usr/bin/env dotnet
 
 #:property ToolCommandName=csval
-#:property VersionPrefix=2.0.0
+#:property VersionPrefix=2.1.0
 #:property Copyright=Copyright 2019 Atif Aziz. All rights reserved.
 #:property Description=Utility to validate syntax of C# source.
 #:property Authors=Atif Aziz
