@@ -128,8 +128,8 @@ static string FormatHelp(string text) =>
                  AppContext.GetData("EntryPointFilePath") switch
                  {
                      string p => $"dotnet {Path.GetFileName(p)}", // file-based app
-                     _ => Environment.ProcessPath // published app
-                          ?? ProgramArguments.Bin
+                     _ => Path.GetFileName(Environment.ProcessPath // published app
+                                           ?? ProgramArguments.Bin)
                  },
                  StringComparison.OrdinalIgnoreCase);
 
