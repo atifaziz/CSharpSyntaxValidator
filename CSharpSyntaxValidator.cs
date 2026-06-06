@@ -51,9 +51,9 @@ return ProgramArguments.CreateParser()
                        .WithVersion(BuildConstants.Version)
                        .Parse(args)
                        .Match(Main,
-                              result => PrintHelp(Console.Out, result.Help),
+                              result => PrintHelp(Console.Out, result.Help.ReplaceLineEndings()),
                               result => Print(Console.Out, result.Version),
-                              result => Print(Console.Error, FormatHelp(result.Usage), exitCode: 1));
+                              result => Print(Console.Error, FormatHelp(result.Usage.ReplaceLineEndings()), exitCode: 1));
 
 int Main(ProgramArguments args)
 {
