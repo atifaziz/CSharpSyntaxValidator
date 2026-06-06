@@ -9,7 +9,7 @@
 #:property PackageTags=csharp;syntax
 
 #:package docopt.net@0.8.3
-#:package ThisAssembly.AssemblyInfo@2.1.2
+#:package BuildConstants@1.1.0
 #:package Microsoft.CodeAnalysis.CSharp@5.0.0
 
 #region Copyright (c) 2019 Atif Aziz. All rights reserved.
@@ -33,6 +33,7 @@ using DocoptNet;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using CSharpSyntaxValidator;
 
 var verbose = false;
 
@@ -47,7 +48,7 @@ AppDomain.CurrentDomain.UnhandledException += (_, args) =>
 };
 
 return ProgramArguments.CreateParser()
-                       .WithVersion(ThisAssembly.Info.Version)
+                       .WithVersion(BuildConstants.Version)
                        .Parse(args)
                        .Match(Main,
                               result => PrintHelp(Console.Out, result.Help),
@@ -146,8 +147,8 @@ static int PrintHelp(TextWriter writer, string helpText)
     var languageVersion = LanguageVersion.Default.MapSpecifiedToEffectiveVersion().ToDisplayString();
     if (LanguageVersion.Latest.MapSpecifiedToEffectiveVersion() != LanguageVersion.Default.MapSpecifiedToEffectiveVersion())
         languageVersion += "; latest = " + LanguageVersion.Latest.MapSpecifiedToEffectiveVersion().ToDisplayString();
-    writer.WriteLine($"C# Syntax Validator, v{ThisAssembly.Info.InformationalVersion} (C# {languageVersion})");
-    writer.WriteLine(ThisAssembly.Info.Copyright);
+    writer.WriteLine($"C# Syntax Validator, v{BuildConstants.InformationalVersion} (C# {languageVersion})");
+    writer.WriteLine(BuildConstants.Copyright);
     writer.WriteLine();
     writer.WriteLine(FormatHelp(helpText));
     writer.WriteLine("C# language versions supported are:");
