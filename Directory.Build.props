@@ -11,6 +11,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/atifaziz/CSharpSyntaxValidator</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes Condition="'$(PackageReleaseNotesFile)' != ''">$([System.IO.File]::ReadAllText('$(PackageReleaseNotesFile)').Trim())</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

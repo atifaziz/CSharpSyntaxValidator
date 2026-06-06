@@ -68,7 +68,7 @@ jobs:
 
           Add-Content $releaseNotesFile -Encoding UTF8 "Commit @ ${{ github.sha }}"
           $packArgs = @(
-            '-p:PackageReleaseNotesFile=$releaseNotesFile',
+            "-p:PackageReleaseNotesFile=$releaseNotesFile",
             '-o', 'dist'
           )
           if ($versionSuffix) {
