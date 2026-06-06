@@ -56,7 +56,7 @@ However, you can package it as a [.NET CLI tool] using:
 
     dotnet pack CSharpSyntaxValidator.cs
 
-Yu can also publish it as a self-contained application that does not require a .NET runtime installation using:
+You can also publish it as a self-contained application that does not require a .NET runtime installation using:
 
     dotnet publish CSharpSyntaxValidator.cs
 
