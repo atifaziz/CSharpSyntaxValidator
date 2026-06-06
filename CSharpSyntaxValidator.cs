@@ -10,7 +10,7 @@
 
 #:package docopt.net@0.8.3
 #:package ThisAssembly.AssemblyInfo@2.1.2
-#:package Microsoft.CodeAnalysis.CSharp@5.3.0
+#:package Microsoft.CodeAnalysis.CSharp@5.0.0
 
 #region Copyright (c) 2019 Atif Aziz. All rights reserved.
 //
